@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import com.ikkei.swingapp.gui.MenuFrame;
+
 @SpringBootApplication
 public class SwingappApplication {
 
@@ -16,7 +18,7 @@ public class SwingappApplication {
                         .run(args);
 
         SwingUtilities.invokeLater(() -> {
-            var frame = context.getBean(com.ikkei.swingapp.gui.MainFrame.class);
+            var frame = context.getBean(MenuFrame.class);
             frame.setVisible(true);
         });
     }
