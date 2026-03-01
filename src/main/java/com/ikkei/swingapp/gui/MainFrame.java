@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MainFrame extends JFrame {
 
-    public MainFrame(MenuFrame menuFrame) {
+    public MainFrame() {
         super("Swing + Spring Boot");
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -24,11 +24,8 @@ public class MainFrame extends JFrame {
         JButton button = new JButton("クリック");
         button.addActionListener(e -> label.setText("押された！"));
 
-        JButton backButton = new JButton("メニューに戻る");
-        backButton.addActionListener(e -> {
-            menuFrame.setVisible(true);
-            dispose();
-        });
+        JButton backButton = new JButton("閉じる");
+        backButton.addActionListener(e -> dispose());
 
         JPanel south = new JPanel();
         south.add(button);

@@ -39,7 +39,6 @@ public class MenuFrame extends JFrame {
         mainFrameButton.addActionListener(e -> {
             MainFrame mainFrame = applicationContext.getBean(MainFrame.class);
             mainFrame.setVisible(true);
-            setVisible(false);
         });
 
         menuPanel.add(mainFrameButton);
