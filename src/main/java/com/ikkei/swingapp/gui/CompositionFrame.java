@@ -17,8 +17,10 @@ import javax.swing.table.DefaultTableModel;
 
 import org.springframework.stereotype.Component;
 
-import com.ikkei.swingapp.domain.CompositionRow;
+import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.service.CompositionService;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class CompositionFrame extends JFrame {
@@ -72,9 +74,9 @@ public class CompositionFrame extends JFrame {
     public void reloadTable() {
         deletedRows.clear();
         tableModel.setRowCount(0);
-        List<CompositionRow> rows = compositionService.findAll();
-        for (CompositionRow row : rows) {
-            tableModel.addRow(new Object[] {row.parentPartNo(), row.childPartNo(), row.level()});
+        List<CompositionBean> rows = compositionService.findAll();
+        for (CompositionBean row : rows) {
+            tableModel.addRow(new Object[] {row.getParentPartNo(), row.getChildPartNo(), row.getLevel()});
         }
     }
 
@@ -109,7 +111,8 @@ public class CompositionFrame extends JFrame {
 
     private void saveTable() {
         try {
-            List<CompositionRow> rows = new ArrayList<>();
+            List<CompositionBean> rows = new ArrayList<>();
+            CompositionBean row = new CompositionBean();
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 String parentPartNo = String.valueOf(tableModel.getValueAt(i, 0)).trim();
                 String childPartNo = String.valueOf(tableModel.getValueAt(i, 1)).trim();
@@ -120,7 +123,11 @@ public class CompositionFrame extends JFrame {
                 }
 
                 int level = Integer.parseInt(levelRaw);
-                rows.add(new CompositionRow(parentPartNo, childPartNo, level));
+                row.setParentPartNo(parentPartNo);
+                row.setChildPartNo(childPartNo);
+                row.setLevel(level);
+                
+                rows.add(row);
             }
 
             compositionService.saveAll(rows);

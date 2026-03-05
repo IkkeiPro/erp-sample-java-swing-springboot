@@ -1,6 +1,6 @@
 package com.ikkei.swingapp.domain;
 
-public class CompositionRow {
+public class CompositionBean {
 
     private String parentPartNo;
     private String childPartNo;

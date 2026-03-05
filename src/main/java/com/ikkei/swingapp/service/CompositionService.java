@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ikkei.swingapp.domain.CompositionRow;
+import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.mapper.CompositionMapper;
 
 @Service
@@ -18,14 +18,12 @@ public class CompositionService {
     }
 
     @Transactional(readOnly = true)
-    public List<CompositionRow> findAll() {
-        compositionMapper.createTableIfNotExists();
+    public List<CompositionBean> findAll() {
         return compositionMapper.findAll();
     }
 
     @Transactional
-    public void saveAll(List<CompositionRow> rows) {
-        compositionMapper.createTableIfNotExists();
+    public void saveAll(List<CompositionBean> rows) {
         compositionMapper.deleteAll();
 
         if (!rows.isEmpty()) {
