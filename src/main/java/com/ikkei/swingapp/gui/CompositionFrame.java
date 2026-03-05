@@ -112,8 +112,8 @@ public class CompositionFrame extends JFrame {
     private void saveTable() {
         try {
             List<CompositionBean> rows = new ArrayList<>();
-            CompositionBean row = new CompositionBean();
             for (int i = 0; i < tableModel.getRowCount(); i++) {
+                CompositionBean row = new CompositionBean();
                 String parentPartNo = String.valueOf(tableModel.getValueAt(i, 0)).trim();
                 String childPartNo = String.valueOf(tableModel.getValueAt(i, 1)).trim();
                 String levelRaw = String.valueOf(tableModel.getValueAt(i, 2)).trim();
