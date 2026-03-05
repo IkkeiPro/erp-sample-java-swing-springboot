@@ -6,9 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.mapper.CompositionMapper;
@@ -38,44 +42,102 @@ class CompositionServiceTest {
         assertEquals(rows, mapper.insertedRows);
     }
 
-    @Test
-    void saveAll_rejectsWhenRootIsInvalid() {
-        List<CompositionBean> rows = List.of(
-                row("A", "X", 0),
-                row("A", "B", 1));
-
+    @ParameterizedTest(name = "{index}: {0}")
+    @MethodSource("invalidTreeCases")
+    void saveAll_rejectsInvalidTrees(String scenario, List<CompositionBean> rows, String expectedMessage) {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveAll(rows));
-        assertEquals("1行目: レベル0は親品番と子品番が同一である必要があります。", ex.getMessage());
+
+        assertEquals(expectedMessage, ex.getMessage());
         assertEquals(0, mapper.deleteAllCalled);
+        assertEquals(List.of(), mapper.insertedRows);
     }
 
-    @Test
-    void saveAll_rejectsWhenChildHasMultipleParents() {
-        List<CompositionBean> rows = List.of(
-                row("A", "A", 0),
-                row("A", "B", 1),
-                row("A", "C", 1),
-                row("B", "D", 2),
-                row("C", "D", 2));
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveAll(rows));
-        assertEquals("子品番 D に複数の親品番が設定されています。", ex.getMessage());
-        assertEquals(0, mapper.deleteAllCalled);
+    static Stream<Arguments> invalidTreeCases() {
+        return Stream.of(
+                Arguments.of(
+                        "レベル未入力",
+                        List.of(
+                                row("A", "A", null)),
+                        "1行目: レベルは必須です。"),
+                Arguments.of(
+                        "レベルが負数",
+                        List.of(
+                                row("A", "A", -1)),
+                        "1行目: レベルは0以上で入力してください。"),
+                Arguments.of(
+                        "親子品番未入力",
+                        List.of(
+                                row("A", "A", 0),
+                                row("", "B", 1)),
+                        "2行目: 親品番・子品番は必須です。"),
+                Arguments.of(
+                        "レベル0で親子不一致",
+                        List.of(
+                                row("A", "X", 0),
+                                row("A", "B", 1)),
+                        "1行目: レベル0は親品番と子品番が同一である必要があります。"),
+                Arguments.of(
+                        "レベル0の親品番が複数",
+                        List.of(
+                                row("A", "A", 0),
+                                row("B", "B", 0)),
+                        "レベル0の親品番は1つに統一してください。"),
+                Arguments.of(
+                        "レベル1以降で親子同一",
+                        List.of(
+                                row("A", "A", 0),
+                                row("A", "A", 1)),
+                        "2行目: レベル1以降は親品番と子品番を同一にできません。"),
+                Arguments.of(
+                        "ルート件数が1件でない",
+                        List.of(
+                                row("A", "B", 1)),
+                        "レベル0のルート構成は1件だけ登録してください。"),
+                Arguments.of(
+                        "中間レベル欠落",
+                        List.of(
+                                row("A", "A", 0),
+                                row("A", "B", 2)),
+                        "レベル1の構成が欠落しています。連続したツリー構造にしてください。"),
+                Arguments.of(
+                        "親品番が上位レベルで未定義",
+                        List.of(
+                                row("A", "A", 0),
+                                row("X", "B", 1)),
+                        "親品番 X は上位レベルで未定義です。"),
+                Arguments.of(
+                        "親品番のレベル不一致",
+                        List.of(
+                                row("A", "A", 0),
+                                row("A", "B", 1),
+                                row("A", "D", 2)),
+                        "親品番 A はレベル1 に存在する必要があります。"),
+                Arguments.of(
+                        "重複構成",
+                        List.of(
+                                row("A", "A", 0),
+                                row("A", "B", 1),
+                                row("A", "B", 1)),
+                        "重複した構成が存在します: A -> B"),
+                Arguments.of(
+                        "子品番に複数親",
+                        List.of(
+                                row("A", "A", 0),
+                                row("A", "B", 1),
+                                row("A", "C", 1),
+                                row("B", "D", 2),
+                                row("C", "D", 2)),
+                        "子品番 D に複数の親品番が設定されています。"),
+                Arguments.of(
+                        "子品番のレベル不整合",
+                        List.of(
+                                row("A", "A", 0),
+                                row("A", "B", 1),
+                                row("B", "A", 2)),
+                        "子品番 A のレベル定義が不整合です。"));
     }
 
-    @Test
-    void saveAll_rejectsWhenParentLevelMismatch() {
-        List<CompositionBean> rows = List.of(
-                row("A", "A", 0),
-                row("A", "B", 1),
-                row("A", "D", 2));
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveAll(rows));
-        assertEquals("親品番 A はレベル1 に存在する必要があります。", ex.getMessage());
-        assertEquals(0, mapper.deleteAllCalled);
-    }
-
-    private static CompositionBean row(String parent, String child, int level) {
+    private static CompositionBean row(String parent, String child, Integer level) {
         CompositionBean row = new CompositionBean();
         row.setParentPartNo(parent);
         row.setChildPartNo(child);
