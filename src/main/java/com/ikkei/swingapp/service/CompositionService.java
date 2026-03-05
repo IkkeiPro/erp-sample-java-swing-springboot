@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.mapper.CompositionMapper;
+import java.util.ArrayList;
 
 @Service
 public class CompositionService {
@@ -41,6 +42,7 @@ public class CompositionService {
             return;
         }
 
+        // 各レベルの行一覧
         Map<Integer, List<CompositionBean>> rowsByLevel = new HashMap<>();
         int maxLevel = 0;
         int rootCount = 0;
@@ -64,11 +66,19 @@ public class CompositionService {
                 throw new IllegalArgumentException(lineNo + "行目: 親品番・子品番は必須です。");
             }
 
-            int level = row.getLevel();
-            rowsByLevel.computeIfAbsent(level, key -> new java.util.ArrayList<>()).add(row);
-            maxLevel = Math.max(maxLevel, level);
+            // Map変数rowsByLevelの中からrowと同レベルのリストを参照
+            List<CompositionBean> list = rowsByLevel.get(row.getLevel());
+            // rowと同レベルのリストがない場合、rowsByLevelに新しいリスト追加
+            if (list == null) {
+                list = new ArrayList<>();
+                rowsByLevel.put(row.getLevel(), list);
+            }
+            // rowをrowsByLevelの中のリストに追加
+            list.add(row);
+            
+            maxLevel = Math.max(maxLevel, row.getLevel());
 
-            if (level == 0) {
+            if (row.getLevel() == 0) {
                 rootCount++;
                 if (!parentPartNo.equals(childPartNo)) {
                     throw new IllegalArgumentException(lineNo + "行目: レベル0は親品番と子品番が同一である必要があります。");
@@ -87,7 +97,9 @@ public class CompositionService {
             throw new IllegalArgumentException("レベル0のルート構成は1件だけ登録してください。");
         }
 
+        // 品番のレベル辞書
         Map<String, Integer> partLevel = new HashMap<>();
+        // 親子の組合せ辞書
         Map<String, String> parentByChild = new HashMap<>();
         Set<String> edgeSet = new HashSet<>();
         partLevel.put(rootPartNo, 0);
@@ -103,28 +115,39 @@ public class CompositionService {
                 String childPartNo = row.getChildPartNo();
 
                 Integer parentLevel = partLevel.get(parentPartNo);
+                // 親品番が上位に存在するかチェック
                 if (parentLevel == null) {
                     throw new IllegalArgumentException("親品番 " + parentPartNo + " は上位レベルで未定義です。");
                 }
+                // 親品番が子品番の1レベル上にいるかチェック
                 if (parentLevel != level - 1) {
                     throw new IllegalArgumentException(
                             "親品番 " + parentPartNo + " はレベル" + (level - 1) + " に存在する必要があります。");
                 }
 
+                // 重複禁止のコレクションに親品番・子品番の組合せを追加して、失敗ならエラー
                 String edgeKey = parentPartNo + "->" + childPartNo;
                 if (!edgeSet.add(edgeKey)) {
                     throw new IllegalArgumentException("重複した構成が存在します: " + parentPartNo + " -> " + childPartNo);
                 }
 
-                String existingParent = parentByChild.putIfAbsent(childPartNo, parentPartNo);
-                if (existingParent != null && !existingParent.equals(parentPartNo)) {
+                // 既に登録済のchildPartNoの親を取得（なければnull）
+                String existingParent = parentByChild.get(childPartNo);
+                if (existingParent == null) {
+                    // childPartNoの親が未登録、今回の親を登録する
+                    parentByChild.put(childPartNo, parentPartNo);
+                } else if (!existingParent.equals(parentPartNo)) {
+                    // childPartNoに複数種類の親がいるからエラー
                     throw new IllegalArgumentException("子品番 " + childPartNo + " に複数の親品番が設定されています。");
                 }
 
+                // 今までに出てきたchildPartNoのレベルを取得。未出ならnull
                 Integer existingLevel = partLevel.get(childPartNo);
+                // childPartNoが別のレベルで既出ならエラー
                 if (existingLevel != null && existingLevel != level) {
                     throw new IllegalArgumentException("子品番 " + childPartNo + " のレベル定義が不整合です。");
                 }
+                // 品番のレベル辞書を更新
                 partLevel.put(childPartNo, level);
             }
         }

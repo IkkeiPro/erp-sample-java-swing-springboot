@@ -13,7 +13,7 @@
         )
     </update>
 
-    <select id="findAll" resultType="CompositionRow">
+    <select id="findAll" resultType="CompositionBean">
         SELECT parent_part_no AS parentPartNo,
                child_part_no AS childPartNo,
                level
