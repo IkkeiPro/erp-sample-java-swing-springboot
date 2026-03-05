@@ -25,7 +25,7 @@ import java.util.Set;
 @Component
 public class CompositionFrame extends JFrame {
 
-    private static final String[] COLUMNS = {"親ファイル", "子ファイル", "レベル"};
+    private static final String[] COLUMNS = {"親部品", "子部品", "レベル"};
 
     private final CompositionService compositionService;
     private final DefaultTableModel tableModel;
@@ -119,7 +119,7 @@ public class CompositionFrame extends JFrame {
                 String levelRaw = String.valueOf(tableModel.getValueAt(i, 2)).trim();
 
                 if (parentPartNo.isEmpty() || childPartNo.isEmpty()) {
-                    throw new IllegalArgumentException((i + 1) + "行目の親ファイル・子ファイルは必須です。");
+                    throw new IllegalArgumentException((i + 1) + "行目の親部品・子部品は必須です。");
                 }
 
                 int level = Integer.parseInt(levelRaw);

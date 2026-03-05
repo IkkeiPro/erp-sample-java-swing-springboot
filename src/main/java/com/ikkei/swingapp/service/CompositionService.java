@@ -63,7 +63,7 @@ public class CompositionService {
             String childPartNo = row.getChildPartNo();
 
             if (parentPartNo == null || parentPartNo.isBlank() || childPartNo == null || childPartNo.isBlank()) {
-                throw new IllegalArgumentException(lineNo + "行目: 親ファイル・子ファイルは必須です。");
+                throw new IllegalArgumentException(lineNo + "行目: 親部品・子部品は必須です。");
             }
 
             // Map変数rowsByLevelの中からrowと同レベルのリストを参照
@@ -81,15 +81,15 @@ public class CompositionService {
             if (row.getLevel() == 0) {
                 rootCount++;
                 if (!parentPartNo.equals(childPartNo)) {
-                    throw new IllegalArgumentException(lineNo + "行目: レベル0は親ファイルと子ファイルが同一である必要があります。");
+                    throw new IllegalArgumentException(lineNo + "行目: レベル0は親部品と子部品が同一である必要があります。");
                 }
                 if (rootPartNo == null) {
                     rootPartNo = parentPartNo;
                 } else if (!rootPartNo.equals(parentPartNo)) {
-                    throw new IllegalArgumentException("レベル0の親ファイルは1つに統一してください。");
+                    throw new IllegalArgumentException("レベル0の親部品は1つに統一してください。");
                 }
             } else if (parentPartNo.equals(childPartNo)) {
-                throw new IllegalArgumentException(lineNo + "行目: レベル1以降は親ファイルと子ファイルを同一にできません。");
+                throw new IllegalArgumentException(lineNo + "行目: レベル1以降は親部品と子部品を同一にできません。");
             }
         }
 
@@ -97,7 +97,7 @@ public class CompositionService {
             throw new IllegalArgumentException("レベル0のルート構成は1件だけ登録してください。");
         }
 
-        // ファイルのレベル辞書
+        // 部品のレベル辞書
         Map<String, Integer> partLevel = new HashMap<>();
         // 親子の組合せ辞書
         Map<String, String> parentByChild = new HashMap<>();
@@ -115,17 +115,17 @@ public class CompositionService {
                 String childPartNo = row.getChildPartNo();
 
                 Integer parentLevel = partLevel.get(parentPartNo);
-                // 親ファイルが上位に存在するかチェック
+                // 親部品が上位に存在するかチェック
                 if (parentLevel == null) {
-                    throw new IllegalArgumentException("親ファイル " + parentPartNo + " は上位レベルで未定義です。");
+                    throw new IllegalArgumentException("親部品 " + parentPartNo + " は上位レベルで未定義です。");
                 }
-                // 親ファイルが子ファイルの1レベル上にいるかチェック
+                // 親部品が子部品の1レベル上にいるかチェック
                 if (parentLevel != level - 1) {
                     throw new IllegalArgumentException(
-                            "親ファイル " + parentPartNo + " はレベル" + (level - 1) + " に存在する必要があります。");
+                            "親部品 " + parentPartNo + " はレベル" + (level - 1) + " に存在する必要があります。");
                 }
 
-                // 重複禁止のコレクションに親ファイル・子ファイルの組合せを追加して、失敗ならエラー
+                // 重複禁止のコレクションに親部品・子部品の組合せを追加して、失敗ならエラー
                 String edgeKey = parentPartNo + "->" + childPartNo;
                 if (!edgeSet.add(edgeKey)) {
                     throw new IllegalArgumentException("重複した構成が存在します: " + parentPartNo + " -> " + childPartNo);
@@ -138,16 +138,16 @@ public class CompositionService {
                     parentByChild.put(childPartNo, parentPartNo);
                 } else if (!existingParent.equals(parentPartNo)) {
                     // childPartNoに複数種類の親がいるからエラー
-                    throw new IllegalArgumentException("子ファイル " + childPartNo + " に複数の親ファイルが設定されています。");
+                    throw new IllegalArgumentException("子部品 " + childPartNo + " に複数の親部品が設定されています。");
                 }
 
                 // 今までに出てきたchildPartNoのレベルを取得。未出ならnull
                 Integer existingLevel = partLevel.get(childPartNo);
                 // childPartNoが別のレベルで既出ならエラー
                 if (existingLevel != null && existingLevel != level) {
-                    throw new IllegalArgumentException("子ファイル " + childPartNo + " のレベル定義が不整合です。");
+                    throw new IllegalArgumentException("子部品 " + childPartNo + " のレベル定義が不整合です。");
                 }
-                // ファイルのレベル辞書を更新
+                // 部品のレベル辞書を更新
                 partLevel.put(childPartNo, level);
             }
         }
