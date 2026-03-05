@@ -41,7 +41,18 @@ public class MenuFrame extends JFrame {
             mainFrame.setVisible(true);
         });
 
+        JButton compositionFrameButton = new JButton("構成画面");
+        compositionFrameButton.setAlignmentX(CENTER_ALIGNMENT);
+        compositionFrameButton.setMaximumSize(new Dimension(240, 36));
+        compositionFrameButton.addActionListener(e -> {
+            CompositionFrame compositionFrame = applicationContext.getBean(CompositionFrame.class);
+            compositionFrame.reloadTable();
+            compositionFrame.setVisible(true);
+        });
+
         menuPanel.add(mainFrameButton);
+        menuPanel.add(Box.createVerticalStrut(12));
+        menuPanel.add(compositionFrameButton);
         menuPanel.add(Box.createVerticalGlue());
 
         root.add(menuPanel, BorderLayout.CENTER);
