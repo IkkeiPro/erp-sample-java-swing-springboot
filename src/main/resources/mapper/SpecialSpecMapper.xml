@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ikkei.swingapp.mapper.SpecialSpecMapper">
+
+    <update id="createTableIfNotExists">
+        CREATE TABLE IF NOT EXISTS special_spec (
+            id SERIAL PRIMARY KEY,
+            operation INTEGER NOT NULL,
+            part_no VARCHAR(100) NOT NULL,
+            quantity INTEGER NOT NULL,
+            changed_part_no VARCHAR(100),
+            changed_quantity INTEGER
+        )
+    </update>
+
+    <select id="findAll" resultType="SpecialSpecBean">
+        SELECT operation,
+               part_no AS partNo,
+               quantity,
+               changed_part_no AS changedPartNo,
+               changed_quantity AS changedQuantity
+        FROM special_spec
+        ORDER BY id
+    </select>
+
+    <delete id="deleteAll">
+        DELETE FROM special_spec
+    </delete>
+
+    <insert id="insertAll">
+        INSERT INTO special_spec (operation, part_no, quantity, changed_part_no, changed_quantity)
+        VALUES
+        <foreach collection="rows" item="row" separator=",">
+            (#{row.operation}, #{row.partNo}, #{row.quantity}, #{row.changedPartNo}, #{row.changedQuantity})
+        </foreach>
+    </insert>
+</mapper>
