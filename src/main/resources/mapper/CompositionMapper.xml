@@ -9,6 +9,8 @@
             parent_part_no VARCHAR(100) NOT NULL,
             child_part_no VARCHAR(100) NOT NULL,
             level INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            required_quantity INTEGER NOT NULL,
             PRIMARY KEY (parent_part_no, child_part_no)
         )
     </update>
@@ -16,7 +18,9 @@
     <select id="findAll" resultType="CompositionBean">
         SELECT parent_part_no AS parentPartNo,
                child_part_no AS childPartNo,
-               level
+               level,
+               quantity,
+               required_quantity AS requiredQuantity
         FROM composition
         ORDER BY parent_part_no, child_part_no
     </select>
@@ -26,10 +30,10 @@
     </delete>
 
     <insert id="insertAll">
-        INSERT INTO composition (parent_part_no, child_part_no, level)
+        INSERT INTO composition (parent_part_no, child_part_no, level, quantity, required_quantity)
         VALUES
         <foreach collection="rows" item="row" separator=",">
-            (#{row.parentPartNo}, #{row.childPartNo}, #{row.level})
+            (#{row.parentPartNo}, #{row.childPartNo}, #{row.level}, #{row.quantity}, #{row.requiredQuantity})
         </foreach>
     </insert>
 </mapper>

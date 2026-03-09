@@ -19,13 +19,11 @@ import org.springframework.stereotype.Component;
 
 import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.service.CompositionService;
-import java.util.HashSet;
-import java.util.Set;
 
 @Component
 public class CompositionFrame extends JFrame {
 
-    private static final String[] COLUMNS = {"親部品", "子部品", "レベル"};
+    private static final String[] COLUMNS = {"親部品", "子部品", "レベル", "員数", "所要量"};
 
     private final CompositionService compositionService;
     private final DefaultTableModel tableModel;
@@ -40,12 +38,17 @@ public class CompositionFrame extends JFrame {
         setSize(760, 420);
         setLocationRelativeTo(null);
 
-        tableModel = new DefaultTableModel(COLUMNS, 0);
+        tableModel = new DefaultTableModel(COLUMNS, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column != 4;
+            }
+        };
         table = new JTable(tableModel);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JButton addButton = new JButton("追加");
-        addButton.addActionListener(e -> tableModel.addRow(new Object[] {"", "", 1}));
+        addButton.addActionListener(e -> tableModel.addRow(new Object[] {"", "", 1, 1, 0}));
 
         JButton deleteButton = new JButton("削除");
         deleteButton.addActionListener(e -> deleteSelectedRows());
@@ -76,7 +79,12 @@ public class CompositionFrame extends JFrame {
         tableModel.setRowCount(0);
         List<CompositionBean> rows = compositionService.findAll();
         for (CompositionBean row : rows) {
-            tableModel.addRow(new Object[] {row.getParentPartNo(), row.getChildPartNo(), row.getLevel()});
+            tableModel.addRow(new Object[] {
+                    row.getParentPartNo(),
+                    row.getChildPartNo(),
+                    row.getLevel(),
+                    row.getQuantity(),
+                    row.getRequiredQuantity()});
         }
     }
 
@@ -91,7 +99,9 @@ public class CompositionFrame extends JFrame {
             Object[] rowData = {
                     tableModel.getValueAt(rowIndex, 0),
                     tableModel.getValueAt(rowIndex, 1),
-                    tableModel.getValueAt(rowIndex, 2)
+                    tableModel.getValueAt(rowIndex, 2),
+                    tableModel.getValueAt(rowIndex, 3),
+                    tableModel.getValueAt(rowIndex, 4)
             };
             deletedRows.push(new DeletedRow(rowIndex, rowData));
             tableModel.removeRow(rowIndex);
@@ -117,24 +127,28 @@ public class CompositionFrame extends JFrame {
                 String parentPartNo = String.valueOf(tableModel.getValueAt(i, 0)).trim();
                 String childPartNo = String.valueOf(tableModel.getValueAt(i, 1)).trim();
                 String levelRaw = String.valueOf(tableModel.getValueAt(i, 2)).trim();
+                String quantityRaw = String.valueOf(tableModel.getValueAt(i, 3)).trim();
 
                 if (parentPartNo.isEmpty() || childPartNo.isEmpty()) {
                     throw new IllegalArgumentException((i + 1) + "行目の親部品・子部品は必須です。");
                 }
 
                 int level = Integer.parseInt(levelRaw);
+                int quantity = Integer.parseInt(quantityRaw);
                 row.setParentPartNo(parentPartNo);
                 row.setChildPartNo(childPartNo);
                 row.setLevel(level);
+                row.setQuantity(quantity);
                 
                 rows.add(row);
             }
 
             compositionService.saveAll(rows);
+            reloadTable();
             deletedRows.clear();
             JOptionPane.showMessageDialog(this, "構成テーブルを保存しました。", "成功", JOptionPane.INFORMATION_MESSAGE);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "レベルは数値で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "レベル・員数は数値で入力してください。", "入力エラー", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "保存エラー", JOptionPane.ERROR_MESSAGE);
         }

@@ -1,9 +1,10 @@
 package com.ikkei.swingapp.service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -11,8 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.mapper.CompositionMapper;
-import java.util.ArrayList;
-
 @Service
 public class CompositionService {
 
@@ -30,10 +29,43 @@ public class CompositionService {
     @Transactional
     public void saveAll(List<CompositionBean> rows) {
         validateTree(rows);
+        calculateRequiredQuantity(rows);
         compositionMapper.deleteAll();
 
         if (!rows.isEmpty()) {
             compositionMapper.insertAll(rows);
+        }
+    }
+
+    private void calculateRequiredQuantity(List<CompositionBean> rows) {
+        Map<Integer, List<CompositionBean>> rowsByLevel = new HashMap<>();
+        for (CompositionBean row : rows) {
+            rowsByLevel.computeIfAbsent(row.getLevel(), ignored -> new ArrayList<>()).add(row);
+        }
+
+        Map<String, Integer> requiredByPartNo = new HashMap<>();
+        List<CompositionBean> levelZeroRows = rowsByLevel.get(0);
+        if (levelZeroRows == null || levelZeroRows.isEmpty()) {
+            return;
+        }
+
+        CompositionBean root = levelZeroRows.get(0);
+        root.setRequiredQuantity(root.getQuantity());
+        requiredByPartNo.put(root.getChildPartNo(), root.getRequiredQuantity());
+
+        int level = 1;
+        while (rowsByLevel.containsKey(level)) {
+            for (CompositionBean row : rowsByLevel.get(level)) {
+                Integer parentRequiredQuantity = requiredByPartNo.get(row.getParentPartNo());
+                if (parentRequiredQuantity == null) {
+                    throw new IllegalArgumentException("親部品 " + row.getParentPartNo() + " の所要量が計算できません。");
+                }
+
+                int requiredQuantity = parentRequiredQuantity * row.getQuantity();
+                row.setRequiredQuantity(requiredQuantity);
+                requiredByPartNo.put(row.getChildPartNo(), requiredQuantity);
+            }
+            level++;
         }
     }
 
@@ -61,6 +93,13 @@ public class CompositionService {
 
             String parentPartNo = row.getParentPartNo();
             String childPartNo = row.getChildPartNo();
+
+            if (row.getQuantity() == null) {
+                throw new IllegalArgumentException(lineNo + "行目: 員数は必須です。");
+            }
+            if (row.getQuantity() <= 0) {
+                throw new IllegalArgumentException(lineNo + "行目: 員数は1以上で入力してください。");
+            }
 
             if (parentPartNo == null || parentPartNo.isBlank() || childPartNo == null || childPartNo.isBlank()) {
                 throw new IllegalArgumentException(lineNo + "行目: 親部品・子部品は必須です。");
