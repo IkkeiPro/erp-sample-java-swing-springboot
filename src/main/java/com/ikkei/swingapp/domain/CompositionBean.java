@@ -5,6 +5,8 @@ public class CompositionBean {
     private String parentPartNo;
     private String childPartNo;
     private Integer level;
+    private Integer quantity;
+    private Integer requiredQuantity;
 
     public String getParentPartNo() {
         return parentPartNo;
@@ -28,5 +30,21 @@ public class CompositionBean {
 
     public void setLevel(Integer level) {
         this.level = level;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Integer getRequiredQuantity() {
+        return requiredQuantity;
+    }
+
+    public void setRequiredQuantity(Integer requiredQuantity) {
+        this.requiredQuantity = requiredQuantity;
     }
 }
