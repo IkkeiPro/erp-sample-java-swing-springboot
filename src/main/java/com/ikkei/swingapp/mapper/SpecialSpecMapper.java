@@ -12,6 +12,8 @@ public interface SpecialSpecMapper {
 
     void createTableIfNotExists();
 
+    void addRequiredQuantityColumnIfNotExists();
+
     List<SpecialSpecBean> findAll();
 
     void deleteAll();

@@ -7,6 +7,7 @@ public class SpecialSpecBean {
     private Integer quantity;
     private String changedPartNo;
     private Integer changedQuantity;
+    private Integer requiredQuantity;
 
     public Integer getOperation() {
         return operation;
@@ -46,5 +47,13 @@ public class SpecialSpecBean {
 
     public void setChangedQuantity(Integer changedQuantity) {
         this.changedQuantity = changedQuantity;
+    }
+
+    public Integer getRequiredQuantity() {
+        return requiredQuantity;
+    }
+
+    public void setRequiredQuantity(Integer requiredQuantity) {
+        this.requiredQuantity = requiredQuantity;
     }
 }

@@ -25,7 +25,7 @@ import com.ikkei.swingapp.service.SpecialSpecService;
 @Component
 public class SpecialSpecFrame extends JFrame {
 
-    private static final String[] COLUMNS = {"処理", "部品", "員数", "変更後部品", "変更後員数"};
+    private static final String[] COLUMNS = {"処理", "部品", "員数", "変更後部品", "変更後員数", "所要量"};
 
     private final SpecialSpecService specialSpecService;
     private final DefaultTableModel tableModel;
@@ -44,6 +44,9 @@ public class SpecialSpecFrame extends JFrame {
         tableModel = new DefaultTableModel(COLUMNS, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
+                if (column == 5) {
+                    return false;
+                }
                 if (column == 0 || column == 1 || column == 2) {
                     return true;
                 }
@@ -63,7 +66,7 @@ public class SpecialSpecFrame extends JFrame {
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JButton addButton = new JButton("行追加");
-        addButton.addActionListener(e -> tableModel.addRow(new Object[] {"1.追加", "", 1, "", null}));
+        addButton.addActionListener(e -> tableModel.addRow(new Object[] {"1.追加", "", 1, "", null, null}));
 
         JButton deleteButton = new JButton("削除");
         deleteButton.addActionListener(e -> deleteSelectedRows());
@@ -98,7 +101,8 @@ public class SpecialSpecFrame extends JFrame {
                     row.getPartNo(),
                     row.getQuantity(),
                     row.getChangedPartNo() == null ? "" : row.getChangedPartNo(),
-                    row.getChangedQuantity()});
+                    row.getChangedQuantity(),
+                    row.getRequiredQuantity()});
         }
     }
 
@@ -115,6 +119,7 @@ public class SpecialSpecFrame extends JFrame {
                 String changedQuantityRaw = String.valueOf(tableModel.getValueAt(i, 4)).trim();
                 row.setChangedPartNo(changedPartNo.isEmpty() ? null : changedPartNo);
                 row.setChangedQuantity(changedQuantityRaw.isEmpty() ? null : Integer.parseInt(changedQuantityRaw));
+                row.setRequiredQuantity(0);
                 rows.add(row);
             }
 
@@ -142,7 +147,8 @@ public class SpecialSpecFrame extends JFrame {
                     tableModel.getValueAt(rowIndex, 1),
                     tableModel.getValueAt(rowIndex, 2),
                     tableModel.getValueAt(rowIndex, 3),
-                    tableModel.getValueAt(rowIndex, 4)};
+                    tableModel.getValueAt(rowIndex, 4),
+                    tableModel.getValueAt(rowIndex, 5)};
             deletedRows.push(new DeletedRow(rowIndex, rowData));
             tableModel.removeRow(rowIndex);
         }
@@ -171,6 +177,7 @@ public class SpecialSpecFrame extends JFrame {
                 if (operation != SpecialSpecService.OPERATION_CHANGE) {
                     tableModel.setValueAt("", i, 3);
                     tableModel.setValueAt(null, i, 4);
+                    tableModel.setValueAt(null, i, 5);
                 }
             }
         } finally {
