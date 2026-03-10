@@ -117,8 +117,13 @@ public class SpecialSpecFrame extends JFrame {
 
                 String changedPartNo = String.valueOf(tableModel.getValueAt(i, 3)).trim();
                 String changedQuantityRaw = String.valueOf(tableModel.getValueAt(i, 4)).trim();
-                row.setChangedPartNo(changedPartNo.isEmpty() ? null : changedPartNo);
-                row.setChangedQuantity(changedQuantityRaw.isEmpty() ? null : Integer.parseInt(changedQuantityRaw));
+                if(row.getOperation() == 2) {
+                    row.setChangedPartNo(changedPartNo.isEmpty() ? null : changedPartNo);
+                    row.setChangedQuantity(changedQuantityRaw.isEmpty() ? null : Integer.parseInt(changedQuantityRaw));
+                } else {
+                    row.setChangedPartNo(null);
+                    row.setChangedQuantity(0);
+                }
                 row.setRequiredQuantity(0);
                 rows.add(row);
             }
