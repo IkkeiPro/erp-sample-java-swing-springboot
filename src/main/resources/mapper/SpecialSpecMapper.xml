@@ -11,8 +11,13 @@
             part_no VARCHAR(100) NOT NULL,
             quantity INTEGER NOT NULL,
             changed_part_no VARCHAR(100),
-            changed_quantity INTEGER
+            changed_quantity INTEGER,
+            required_quantity INTEGER NOT NULL
         )
+    </update>
+    <update id="addRequiredQuantityColumnIfNotExists">
+        ALTER TABLE special_spec
+        ADD COLUMN IF NOT EXISTS required_quantity INTEGER NOT NULL DEFAULT 0
     </update>
 
     <select id="findAll" resultType="SpecialSpecBean">
@@ -20,7 +25,8 @@
                part_no AS partNo,
                quantity,
                changed_part_no AS changedPartNo,
-               changed_quantity AS changedQuantity
+               changed_quantity AS changedQuantity,
+               required_quantity AS requiredQuantity
         FROM special_spec
         ORDER BY id
     </select>
@@ -30,10 +36,10 @@
     </delete>
 
     <insert id="insertAll">
-        INSERT INTO special_spec (operation, part_no, quantity, changed_part_no, changed_quantity)
+        INSERT INTO special_spec (operation, part_no, quantity, changed_part_no, changed_quantity, required_quantity)
         VALUES
         <foreach collection="rows" item="row" separator=",">
-            (#{row.operation}, #{row.partNo}, #{row.quantity}, #{row.changedPartNo}, #{row.changedQuantity})
+            (#{row.operation}, #{row.partNo}, #{row.quantity}, #{row.changedPartNo}, #{row.changedQuantity}, #{row.requiredQuantity})
         </foreach>
     </insert>
 </mapper>

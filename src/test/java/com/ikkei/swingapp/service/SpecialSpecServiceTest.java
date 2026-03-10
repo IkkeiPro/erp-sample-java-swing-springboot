@@ -11,7 +11,9 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.ikkei.swingapp.domain.CompositionBean;
 import com.ikkei.swingapp.domain.SpecialSpecBean;
+import com.ikkei.swingapp.mapper.CompositionMapper;
 import com.ikkei.swingapp.mapper.SpecialSpecMapper;
 
 class SpecialSpecServiceTest {
@@ -22,25 +24,32 @@ class SpecialSpecServiceTest {
     @BeforeEach
     void setUp() {
         mapper = new RecordingSpecialSpecMapper();
-        service = new SpecialSpecService(mapper);
+        CompositionService compositionService = new CompositionService(new FixedCompositionMapper(List.of(
+                composition("A", "A", 0, 1),
+                composition("A", "B", 1, 2),
+                composition("B", "C", 2, 3))));
+        service = new SpecialSpecService(mapper, compositionService);
     }
 
     @Test
     void saveAll_acceptsAddChangeDelete() {
         List<SpecialSpecBean> rows = List.of(
-                row(1, "A", 1, "X", 9),
-                row(2, "B", 2, "C", 3),
-                row(3, "D", 4, "Y", 7));
+                row(1, "D", 4, "X", 9),
+                row(2, "B", 2, "E", 5),
+                row(3, "C", 3, "Y", 7));
 
         assertDoesNotThrow(() -> service.saveAll(rows));
         assertEquals(1, mapper.deleteAllCalled);
         assertEquals(3, mapper.insertedRows.size());
         assertNull(rows.get(0).getChangedPartNo());
         assertNull(rows.get(0).getChangedQuantity());
-        assertEquals("C", rows.get(1).getChangedPartNo());
-        assertEquals(3, rows.get(1).getChangedQuantity());
+        assertEquals(4, rows.get(0).getRequiredQuantity());
+        assertEquals("E", rows.get(1).getChangedPartNo());
+        assertEquals(5, rows.get(1).getChangedQuantity());
+        assertEquals(5, rows.get(1).getRequiredQuantity());
         assertNull(rows.get(2).getChangedPartNo());
         assertNull(rows.get(2).getChangedQuantity());
+        assertEquals(0, rows.get(2).getRequiredQuantity());
     }
 
     @Test
@@ -65,12 +74,25 @@ class SpecialSpecServiceTest {
         return row;
     }
 
+    private static CompositionBean composition(String parent, String child, int level, int quantity) {
+        CompositionBean row = new CompositionBean();
+        row.setParentPartNo(parent);
+        row.setChildPartNo(child);
+        row.setLevel(level);
+        row.setQuantity(quantity);
+        return row;
+    }
+
     private static class RecordingSpecialSpecMapper implements SpecialSpecMapper {
         int deleteAllCalled = 0;
         List<SpecialSpecBean> insertedRows = List.of();
 
         @Override
         public void createTableIfNotExists() {
+        }
+
+        @Override
+        public void addRequiredQuantityColumnIfNotExists() {
         }
 
         @Override
@@ -86,6 +108,31 @@ class SpecialSpecServiceTest {
         @Override
         public void insertAll(List<SpecialSpecBean> rows) {
             insertedRows = new ArrayList<>(rows);
+        }
+    }
+
+    private static class FixedCompositionMapper implements CompositionMapper {
+        private final List<CompositionBean> rows;
+
+        FixedCompositionMapper(List<CompositionBean> rows) {
+            this.rows = rows;
+        }
+
+        @Override
+        public void createTableIfNotExists() {
+        }
+
+        @Override
+        public List<CompositionBean> findAll() {
+            return rows;
+        }
+
+        @Override
+        public void deleteAll() {
+        }
+
+        @Override
+        public void insertAll(List<CompositionBean> rows) {
         }
     }
 }
