@@ -72,7 +72,8 @@ public class SpecialSpecService {
                 compositionRows.add(added);
             } else if (spec.getOperation() == OPERATION_CHANGE) {
                 for (CompositionBean row : compositionRows) {
-                    if (matches(row, spec.getPartNo(), spec.getQuantity())) {
+                    if (row.getChildPartNo().equals(spec.getPartNo())  
+                        && row.getQuantity().equals(spec.getQuantity())) {
                         row.setChildPartNo(spec.getChangedPartNo());
                         row.setQuantity(spec.getChangedQuantity());
                     }
