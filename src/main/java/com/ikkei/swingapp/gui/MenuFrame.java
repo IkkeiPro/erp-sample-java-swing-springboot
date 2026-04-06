@@ -43,12 +43,21 @@ public class MenuFrame extends JFrame {
 
         JButton compositionFrameButton = new JButton("構成画面");
         JButton specialSpecFrameButton = new JButton("特別仕様画面");
+        JButton productMasterFrameButton = new JButton("商品マスタ画面");
         specialSpecFrameButton.setAlignmentX(CENTER_ALIGNMENT);
         specialSpecFrameButton.setMaximumSize(new Dimension(240, 36));
         specialSpecFrameButton.addActionListener(e -> {
             SpecialSpecFrame specialSpecFrame = applicationContext.getBean(SpecialSpecFrame.class);
             specialSpecFrame.reloadTable();
             specialSpecFrame.setVisible(true);
+        });
+
+        productMasterFrameButton.setAlignmentX(CENTER_ALIGNMENT);
+        productMasterFrameButton.setMaximumSize(new Dimension(240, 36));
+        productMasterFrameButton.addActionListener(e -> {
+            ProductMasterFrame productMasterFrame = applicationContext.getBean(ProductMasterFrame.class);
+            productMasterFrame.reloadTable();
+            productMasterFrame.setVisible(true);
         });
 
         compositionFrameButton.setAlignmentX(CENTER_ALIGNMENT);
@@ -64,6 +73,8 @@ public class MenuFrame extends JFrame {
         menuPanel.add(compositionFrameButton);
         menuPanel.add(Box.createVerticalStrut(12));
         menuPanel.add(specialSpecFrameButton);
+        menuPanel.add(Box.createVerticalStrut(12));
+        menuPanel.add(productMasterFrameButton);
         menuPanel.add(Box.createVerticalGlue());
 
         root.add(menuPanel, BorderLayout.CENTER);
