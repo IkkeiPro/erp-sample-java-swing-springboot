@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ikkei.swingapp.mapper.ProductMasterMapper">
+
+    <update id="createUpdaterTableIfNotExists">
+        CREATE TABLE IF NOT EXISTS updater_master (
+            updater_code VARCHAR(20) PRIMARY KEY,
+            updater_name VARCHAR(100) NOT NULL
+        )
+    </update>
+
+    <update id="createProductTableIfNotExists">
+        CREATE TABLE IF NOT EXISTS product_master (
+            product_code VARCHAR(20) PRIMARY KEY,
+            product_name VARCHAR(100) NOT NULL,
+            updater_code VARCHAR(20) NOT NULL
+        )
+    </update>
+
+    <insert id="seedUpdaters">
+        INSERT INTO updater_master (updater_code, updater_name)
+        VALUES
+            ('U001', '山田 太郎'),
+            ('U002', '佐藤 花子'),
+            ('U003', '鈴木 次郎')
+        ON CONFLICT (updater_code) DO NOTHING
+    </insert>
+
+    <select id="findAllForView" resultType="ProductMasterViewBean">
+        SELECT p.product_code AS productCode,
+               p.product_name AS productName,
+               p.updater_code AS updaterCode,
+               COALESCE(u.updater_name, '') AS updaterName
+          FROM product_master p
+          LEFT JOIN updater_master u
+            ON p.updater_code = u.updater_code
+         ORDER BY p.product_code
+    </select>
+
+    <insert id="insert" parameterType="ProductMasterBean">
+        INSERT INTO product_master (
+            product_code,
+            product_name,
+            updater_code
+        ) VALUES (
+            #{productCode},
+            #{productName},
+            #{updaterCode}
+        )
+    </insert>
+
+    <update id="update" parameterType="ProductMasterBean">
+        UPDATE product_master
+           SET product_name = #{productName},
+               updater_code = #{updaterCode}
+         WHERE product_code = #{productCode}
+    </update>
+
+    <delete id="delete" parameterType="ProductMasterBean">
+        DELETE FROM product_master
+         WHERE product_code = #{productCode}
+    </delete>
+</mapper>
