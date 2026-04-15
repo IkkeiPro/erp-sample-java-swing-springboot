@@ -15,8 +15,14 @@
         CREATE TABLE IF NOT EXISTS product_master (
             product_code VARCHAR(20) PRIMARY KEY,
             product_name VARCHAR(100) NOT NULL,
+            product_category VARCHAR(100) NOT NULL,
             updater_code VARCHAR(20) NOT NULL
         )
+    </update>
+
+    <update id="addProductCategoryColumnIfNotExists">
+        ALTER TABLE product_master
+        ADD COLUMN IF NOT EXISTS product_category VARCHAR(100) NOT NULL DEFAULT ''
     </update>
 
     <insert id="seedUpdaters">
@@ -31,6 +37,7 @@
     <select id="findAllForView" resultType="ProductMasterViewBean">
         SELECT p.product_code AS productCode,
                p.product_name AS productName,
+               p.product_category AS productCategory,
                p.updater_code AS updaterCode,
                COALESCE(u.updater_name, '') AS updaterName
           FROM product_master p
@@ -43,10 +50,12 @@
         INSERT INTO product_master (
             product_code,
             product_name,
+            product_category,
             updater_code
         ) VALUES (
             #{productCode},
             #{productName},
+            #{productCategory},
             #{updaterCode}
         )
     </insert>
@@ -54,6 +63,7 @@
     <update id="update" parameterType="ProductMasterBean">
         UPDATE product_master
            SET product_name = #{productName},
+               product_category = #{productCategory},
                updater_code = #{updaterCode}
          WHERE product_code = #{productCode}
     </update>

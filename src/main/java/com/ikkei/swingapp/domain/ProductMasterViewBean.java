@@ -7,8 +7,9 @@ public class ProductMasterViewBean extends ProductMasterBean {
     public ProductMasterViewBean() {
     }
 
-    public ProductMasterViewBean(String productCode, String productName, String updaterCode, String updaterName) {
-        super(productCode, productName, updaterCode);
+    public ProductMasterViewBean(String productCode, String productName, String productCategory, String updaterCode,
+            String updaterName) {
+        super(productCode, productName, productCategory, updaterCode);
         this.updaterName = updaterName;
     }
 

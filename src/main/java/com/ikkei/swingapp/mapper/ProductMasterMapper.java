@@ -14,6 +14,8 @@ public interface ProductMasterMapper {
 
     void createProductTableIfNotExists();
 
+    void addProductCategoryColumnIfNotExists();
+
     void seedUpdaters();
 
     List<ProductMasterViewBean> findAllForView();
