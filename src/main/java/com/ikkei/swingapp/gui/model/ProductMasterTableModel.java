@@ -9,7 +9,7 @@ import com.ikkei.swingapp.domain.ProductMasterViewBean;
 
 public class ProductMasterTableModel extends AbstractTableModel {
 
-    private static final String[] COLUMNS = {"商品コード", "商品名", "更新担当者コード", "更新担当者名"};
+    private static final String[] COLUMNS = {"商品コード", "商品名", "商品区分", "更新担当者コード", "更新担当者名"};
 
     private final List<ProductMasterViewBean> rows = new ArrayList<>();
 
@@ -20,7 +20,7 @@ public class ProductMasterTableModel extends AbstractTableModel {
     }
 
     public void addEmptyRow() {
-        rows.add(new ProductMasterViewBean("", "", "", ""));
+        rows.add(new ProductMasterViewBean("", "", "", "", ""));
         int index = rows.size() - 1;
         fireTableRowsInserted(index, index);
     }
@@ -55,8 +55,9 @@ public class ProductMasterTableModel extends AbstractTableModel {
         return switch (columnIndex) {
             case 0 -> row.getProductCode();
             case 1 -> row.getProductName();
-            case 2 -> row.getUpdaterCode();
-            case 3 -> row.getUpdaterName();
+            case 2 -> row.getProductCategory();
+            case 3 -> row.getUpdaterCode();
+            case 4 -> row.getUpdaterName();
             default -> "";
         };
     }
@@ -69,7 +70,8 @@ public class ProductMasterTableModel extends AbstractTableModel {
         switch (columnIndex) {
             case 0 -> row.setProductCode(text);
             case 1 -> row.setProductName(text);
-            case 2 -> row.setUpdaterCode(text);
+            case 2 -> row.setProductCategory(text);
+            case 3 -> row.setUpdaterCode(text);
             default -> {
                 return;
             }
@@ -79,6 +81,6 @@ public class ProductMasterTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex != 3;
+        return columnIndex != 4;
     }
 }

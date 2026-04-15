@@ -21,6 +21,7 @@ public class ProductMasterService {
         this.productMasterMapper = productMasterMapper;
         this.productMasterMapper.createUpdaterTableIfNotExists();
         this.productMasterMapper.createProductTableIfNotExists();
+        this.productMasterMapper.addProductCategoryColumnIfNotExists();
         this.productMasterMapper.seedUpdaters();
     }
 
@@ -58,6 +59,7 @@ public class ProductMasterService {
 
     private boolean isChanged(ProductMasterViewBean current, ProductMasterViewBean original) {
         return !Objects.equals(current.getProductName(), original.getProductName())
+                || !Objects.equals(current.getProductCategory(), original.getProductCategory())
                 || !Objects.equals(current.getUpdaterCode(), original.getUpdaterCode());
     }
 
@@ -67,13 +69,15 @@ public class ProductMasterService {
             ProductMasterViewBean row = rows.get(i);
             String code = trimToNull(row.getProductCode());
             String name = trimToNull(row.getProductName());
+            String category = trimToNull(row.getProductCategory());
             String updaterCode = trimToNull(row.getUpdaterCode());
 
-            if (code == null || name == null || updaterCode == null) {
-                throw new IllegalArgumentException((i + 1) + "行目: 商品コード・商品名・更新担当者コードは必須です。");
+            if (code == null || name == null || category == null || updaterCode == null) {
+                throw new IllegalArgumentException((i + 1) + "行目: 商品コード・商品名・商品区分・更新担当者コードは必須です。");
             }
             row.setProductCode(code);
             row.setProductName(name);
+            row.setProductCategory(category);
             row.setUpdaterCode(updaterCode);
 
             if (byCode.putIfAbsent(code, row) != null) {

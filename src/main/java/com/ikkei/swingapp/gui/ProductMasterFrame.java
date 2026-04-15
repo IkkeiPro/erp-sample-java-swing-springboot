@@ -98,6 +98,7 @@ public class ProductMasterFrame extends JFrame {
             copied.add(new ProductMasterViewBean(
                     row.getProductCode(),
                     row.getProductName(),
+                    row.getProductCategory(),
                     row.getUpdaterCode(),
                     row.getUpdaterName()));
         }
